@@ -1,8 +1,5 @@
-
 import pymongo
-import urllib.parse
 import logging
-import os
 
 from typing import Mapping, Union, List
 
@@ -30,12 +27,7 @@ class MongoDBDAO(metaclass=Singleton):
     It contains main CRUD operations (Create, Read, Update and Delete), used by BRISE to operate with a database
     '''
     def __init__(self, mongo_host: str, mongo_port: int, database_name: str, user: str, passwd: str):
-        username = urllib.parse.quote_plus(user)
-        password = urllib.parse.quote_plus(passwd)
-        self.client = pymongo.MongoClient(
-            f"mongodb://{user}:{passwd}@{mongo_host}:{mongo_port}/?authSource=admin"
-            # mongo_host + ":" + str(mongo_port), username=username, password=password, authSource="admin"
-        )
+        self.client = pymongo.MongoClient(f"mongodb://{user}:{passwd}@{mongo_host}:{mongo_port}/?authSource=admin")
         self.database = self.client[database_name]
         self.logger = logging.getLogger(__name__)
 
