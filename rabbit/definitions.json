@@ -40,6 +40,13 @@
       "arguments": {}
     },
     {
+      "name": "front_to_back_query_db",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "back_to_front",
       "vhost": "/",
       "durable": true,

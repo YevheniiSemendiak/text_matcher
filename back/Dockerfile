@@ -17,4 +17,4 @@ RUN python -c 'from sentence_transformers import SentenceTransformer as ST; ST("
 COPY . /root
 WORKDIR /root
 
-CMD dockerize -wait tcp://${TEXT_MATCHER_RMQ_HOST}:${TEXT_MATCHER_RMQ_AMQP_PORT} python -u api.py
+CMD dockerize -wait tcp://${TEXT_MATCHER_RMQ_HOST}:${TEXT_MATCHER_RMQ_AMQP_PORT} -timeout 30s python -u api.py

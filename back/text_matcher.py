@@ -1,4 +1,3 @@
-import os
 import nltk
 import uuid
 import pickle
@@ -17,14 +16,8 @@ IDLE = 1
 
 class TextMatcher:
 
-    def __init__(self):
-        self.dbdao = MongoDBDAO(
-            mongo_host=os.getenv("TEXT_MATCHER_MONGO_ADDR"),
-            mongo_port=int(os.getenv("TEXT_MATCHER_MONGO_PORT")),
-            database_name=os.getenv("TEXT_MATCHER_MONGO_DB_NAME"),
-            user=os.getenv("TEXT_MATCHER_MONGO_USER"),
-            passwd=os.getenv("TEXT_MATCHER_MONGO_PASS")
-        )
+    def __init__(self, db_dao: MongoDBDAO):
+        self.dbdao = db_dao
 
         self.model: AEmbeddingModel = SBERTEmbedding("bert-base-nli-mean-tokens")
         self.state = IDLE
