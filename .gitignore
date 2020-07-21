@@ -1,2 +1,4 @@
 .vscode
 .idea
+mongo_data
+__pycache__
