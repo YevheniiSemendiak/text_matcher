@@ -26,7 +26,7 @@ class TextMatcher:
             passwd=os.getenv("TEXT_MATCHER_MONGO_PASS")
         )
 
-        self.model: AEmbeddingModel = SBERTEmbedding("./models/bert-base-nli-mean-tokens/")
+        self.model: AEmbeddingModel = SBERTEmbedding("bert-base-nli-mean-tokens")
         self.state = IDLE
         self.logger = logging.getLogger(__name__)
 
