@@ -6,6 +6,7 @@ import logging
 import pika
 
 import text_matcher as tm
+from utils import MongoDBDAO
 
 
 logging.basicConfig(
@@ -23,7 +24,14 @@ class API:
                 port=int(os.getenv("TEXT_MATCHER_RMQ_AMQP_PORT"))
             )
         )
-        self.text_matcher: tm.TextMatcher = None
+        self.db_dao = MongoDBDAO(
+            mongo_host=os.getenv("TEXT_MATCHER_MONGO_ADDR"),
+            mongo_port=int(os.getenv("TEXT_MATCHER_MONGO_PORT")),
+            database_name=os.getenv("TEXT_MATCHER_MONGO_DB_NAME"),
+            user=os.getenv("TEXT_MATCHER_MONGO_USER"),
+            passwd=os.getenv("TEXT_MATCHER_MONGO_PASS")
+        )
+        self.text_matcher = tm.TextMatcher(self.db_dao)
         self.logger = logging.getLogger(__name__)
     
     # --------------
@@ -38,12 +46,13 @@ class API:
         response = {
             "success": False,
             "error": "",
-            "textUUID": ""
+            "textUUID": "",
+            "type": "processText"
         }
 
         if self.wait_matcher_is_ready(5):
             try:
-                response["textUUID"] = self.text_matcher.process_new_text(request["text"])
+                response["textUUID"] = self.text_matcher.process_new_text(request)
                 response["success"] = True
 
             except Exception as err:
@@ -54,7 +63,7 @@ class API:
 
         channel.basic_publish(
             exchange='',
-            routing_key="back_to_front",
+            routing_key=properties.reply_to,
             body=json.dumps(response),
             properties=pika.BasicProperties(
                 correlation_id=properties.correlation_id,
@@ -62,6 +71,20 @@ class API:
             )
         )
         channel.basic_ack(delivery_tag=method.delivery_tag)
+        channel.basic_publish(
+            exchange="logs",
+            routing_key="",
+            body=json.dumps(
+                {
+                    "level": "info",
+                    "type": "success",
+                    "message": f"Successfully processed text (ID: {response['textUUID']})."
+                 }
+            ),
+            properties=pika.BasicProperties(
+                content_type="application/json"
+            )
+        )
 
     def get_sentence_distances(self,
                                channel: pika.channel.Channel,
@@ -73,6 +96,7 @@ class API:
         response = {
             "success": False,
             "error": "",
+            "type": "SentenceDistances",
             "distances": [{}]
         }
 
@@ -85,6 +109,41 @@ class API:
                 response["error"] = str(err)
         else:
             response["error"] = f"TextMatcher is not IDLE: {self.text_matcher.state}"
+
+        channel.basic_publish(
+            exchange='',
+            routing_key=properties.reply_to,
+            body=json.dumps(response),
+            properties=pika.BasicProperties(
+                correlation_id=properties.correlation_id,
+                content_type="application/json"
+            )
+        )
+        channel.basic_ack(delivery_tag=method.delivery_tag)
+
+    def query_db(self,
+                 channel: pika.channel.Channel,
+                 method: pika.spec.Basic.Deliver,
+                 properties: pika.spec.BasicProperties,
+                 body: bytes):
+        request = json.loads(body)
+        # body must include "collectionName" (str) and "filter" (dict) and "projection" (dict)
+        response = {
+            "success": False,
+            "error": "",
+            "type": "QueryDB",
+            "data": None
+        }
+        try:
+            response["data"] = self.db_dao.get_records(
+                request.pop("collectionName"), request.pop("filter"), request.pop("projection")
+            )
+            response["success"] = True
+            if type(properties.reply_to) != str:
+                raise TypeError("reply_to pro")
+        except Exception as e:
+            response["success"] = False
+            response["error"] = str(e)
 
         channel.basic_publish(
             exchange='',
@@ -111,12 +170,12 @@ class API:
         Point of entry to the server part of PRC,
         listening of queues with PRC requests
         """
-        self.text_matcher = tm.TextMatcher()
         rmq_channel = self.rmq_connection.channel()
         rmq_channel.basic_qos(prefetch_count=1)
 
         rmq_channel.basic_consume(queue='front_to_back_text', on_message_callback=self.new_text)
         rmq_channel.basic_consume(queue='front_to_back_sentences', on_message_callback=self.get_sentence_distances)
+        rmq_channel.basic_consume(queue='front_to_back_query_db', on_message_callback=self.query_db)
 
         try:
             rmq_channel.start_consuming()

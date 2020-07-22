@@ -30,7 +30,6 @@ def on_reply(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
-ch.basic_consume("back_to_front", on_message_callback=on_reply)
 ch.basic_consume(temp_queue_name, on_message_callback=on_reply)
 
 
@@ -48,7 +47,7 @@ def send_text():
     ch.basic_publish(
         exchange="",
         routing_key="front_to_back_text",
-        body=json.dumps({"text": tts}),
+        body=json.dumps({"text": tts, "title": f"{tts[:10]}..."}),
         properties=pika.BasicProperties(
             content_type="application/json"
         )
