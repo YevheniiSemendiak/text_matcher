@@ -29,7 +29,6 @@ class TextMatcher:
             raise RuntimeError(f"TextMatcher is not IDLE: {self.state}")
         else:
             self.state = BUSY
-        print(request)
         sentences = nltk.sent_tokenize(text=request["text"], language="english")
         sentences_uuids = [uuid.uuid4().hex for _ in range(len(sentences))]
         text_uuid = uuid.uuid4().hex

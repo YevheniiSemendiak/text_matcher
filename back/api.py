@@ -46,7 +46,8 @@ class API:
         response = {
             "success": False,
             "error": "",
-            "textUUID": ""
+            "textUUID": "",
+            "type": "processText"
         }
 
         if self.wait_matcher_is_ready(5):
@@ -62,7 +63,7 @@ class API:
 
         channel.basic_publish(
             exchange='',
-            routing_key="back_to_front",
+            routing_key=properties.reply_to,
             body=json.dumps(response),
             properties=pika.BasicProperties(
                 correlation_id=properties.correlation_id,
@@ -70,6 +71,20 @@ class API:
             )
         )
         channel.basic_ack(delivery_tag=method.delivery_tag)
+        channel.basic_publish(
+            exchange="logs",
+            routing_key="",
+            body=json.dumps(
+                {
+                    "level": "info",
+                    "type": "success",
+                    "message": f"Successfully processed text (ID: {response['textUUID']})."
+                 }
+            ),
+            properties=pika.BasicProperties(
+                content_type="application/json"
+            )
+        )
 
     def get_sentence_distances(self,
                                channel: pika.channel.Channel,
@@ -81,6 +96,7 @@ class API:
         response = {
             "success": False,
             "error": "",
+            "type": "SentenceDistances",
             "distances": [{}]
         }
 
@@ -115,6 +131,7 @@ class API:
         response = {
             "success": False,
             "error": "",
+            "type": "QueryDB",
             "data": None
         }
         try:

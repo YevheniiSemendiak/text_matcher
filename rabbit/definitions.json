@@ -54,7 +54,19 @@
       "arguments": {}
     }
   ],
-  "exchanges": [],
+  "exchanges": [
+    {
+      "name": "logs",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {
+        "x-message-ttl": 1000
+      }
+    }
+  ],
   "bindings": [
     {
       "source": "amq.direct",
