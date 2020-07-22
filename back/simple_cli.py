@@ -48,7 +48,7 @@ def send_text():
     ch.basic_publish(
         exchange="",
         routing_key="front_to_back_text",
-        body=json.dumps({"text": tts}),
+        body=json.dumps({"text": tts, "title": f"{tts[:10]}..."}),
         properties=pika.BasicProperties(
             content_type="application/json"
         )

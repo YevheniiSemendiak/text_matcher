@@ -51,7 +51,7 @@ class API:
 
         if self.wait_matcher_is_ready(5):
             try:
-                response["textUUID"] = self.text_matcher.process_new_text(request["text"])
+                response["textUUID"] = self.text_matcher.process_new_text(request)
                 response["success"] = True
 
             except Exception as err:

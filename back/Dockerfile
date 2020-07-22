@@ -12,7 +12,8 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 COPY requirements.txt /root
 RUN pip install --no-cache-dir -q -r /root/requirements.txt
 # Preloading BERT model (will be saved into cache)
-RUN python -c 'from sentence_transformers import SentenceTransformer as ST; ST("bert-base-nli-mean-tokens")'
+RUN python -c 'import nltk; from sentence_transformers import SentenceTransformer; \
+    SentenceTransformer("bert-base-nli-mean-tokens"); nltk.download("punkt");'
 
 COPY . /root
 WORKDIR /root

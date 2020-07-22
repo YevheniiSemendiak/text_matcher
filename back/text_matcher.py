@@ -1,4 +1,3 @@
-import nltk
 import uuid
 import pickle
 import logging
@@ -6,6 +5,7 @@ from typing import List, Mapping
 
 import scipy
 import numpy as np
+import nltk
 
 from utils import MongoDBDAO
 from model_wrappers import AEmbeddingModel, SBERTEmbedding
@@ -23,22 +23,24 @@ class TextMatcher:
         self.state = IDLE
         self.logger = logging.getLogger(__name__)
 
-    def process_new_text(self, text: str) -> str:
+    def process_new_text(self, request: Mapping) -> str:
 
         if self.state != IDLE:
             raise RuntimeError(f"TextMatcher is not IDLE: {self.state}")
         else:
             self.state = BUSY
-
-        sentences = nltk.sent_tokenize(text=text, language="english")
+        print(request)
+        sentences = nltk.sent_tokenize(text=request["text"], language="english")
         sentences_uuids = [uuid.uuid4().hex for _ in range(len(sentences))]
         text_uuid = uuid.uuid4().hex
-        self.logger.info(f"Processing text {text[:10]}... ({len(sentences_uuids)} sentences) ID: {text_uuid}")
+        self.logger.info(f"Processing text {request['text'][:10]}... ({len(sentences_uuids)} sentences) ID: {text_uuid}")
         self.dbdao.write_one_record(
             collection_name="Text",
             record={
                 "_id": text_uuid,
-                "sentencesUUID": sentences_uuids
+                "sentencesUUID": sentences_uuids,
+                "text": request["text"],
+                "title": request.get("title")
                 }
             )
 
