@@ -1,19 +1,28 @@
 <template>
     <v-app>
         <app-navigation></app-navigation>
-        <v-main><home></home></v-main>
+        <v-main>
+            <router-view />
+            <alert-notifier />
+        </v-main>
+        <v-footer></v-footer>
     </v-app>
 </template>
 
 <script>
 import AppNavigation from "@/components/AppNavigation";
-import Home from "@/components/Home";
+import AlertNotifier from "@/components/AlertNotifier";
 
 export default {
     name: "App",
     components: {
         AppNavigation,
-        Home
+        AlertNotifier
+    },
+    watch: {
+        $route(to, from) {
+            document.title = "TextMacher | " + to.meta.title;
+        }
     }
 };
 </script>

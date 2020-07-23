@@ -1,11 +1,13 @@
 <template>
-    <v-card :max-height="cardMaxHeigh" :max-width="cardMaxWidth">
-        <v-card-title> {{ title }} </v-card-title>
-        <v-card-subtitle> {{ id }} </v-card-subtitle>
-        <v-card-text>
-            <div class="textOverflowing">{{ text }}</div></v-card-text
-        >
-    </v-card>
+    <v-hover v-slot:default="{ hover }">
+        <v-card :elevation="hover ? 12 : 2">
+            <v-card-title> {{ title }} </v-card-title>
+            <v-card-subtitle> {{ id }} </v-card-subtitle>
+            <v-card-text>
+                <div class="textOverflowing">{{ text }}</div></v-card-text
+            >
+        </v-card>
+    </v-hover>
 </template>
 
 <script>
@@ -27,9 +29,8 @@ export default {
     },
     data() {
         return {
-            cardMaxHeigh: window.innerHeight / 4,
-            // cardMaxHeigh: "100%",
-            cardMaxWidth: window.innerWidth / 3 - window.innerWidth * 0.1
+            // cardMaxHeigh: window.innerHeight / 4,
+            // cardMaxWidth: window.innerWidth / 3 - window.innerWidth * 0.1
         };
     }
 };

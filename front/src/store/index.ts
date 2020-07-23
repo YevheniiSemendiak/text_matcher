@@ -7,7 +7,8 @@ export default new Vuex.Store({
     state: {
         addTextFormShown: false,
         wStompObj: null,
-        textToSend: Array<Text>()
+        textToSend: Array<Text>(),
+        logs: Array<LogMessage>()
     },
     mutations: {
         flipAddTextFormShown(state) {
@@ -21,6 +22,12 @@ export default new Vuex.Store({
         },
         popTextToSend(state) {
             state.textToSend.pop();
+        },
+        pushLogMessage(state, logMessage: LogMessage) {
+            state.logs.push(logMessage);
+        },
+        popLogMessage(state) {
+            state.logs.pop();
         }
     },
     actions: {},
@@ -28,6 +35,9 @@ export default new Vuex.Store({
     getters: {
         textToSend: state => {
             return state.textToSend[state.textToSend.length - 1];
+        },
+        lastLogMessage: state => {
+            return state.logs[state.logs.length - 1];
         }
     }
 });
