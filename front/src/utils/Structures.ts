@@ -4,3 +4,9 @@ interface Text {
     readonly text: string;
     readonly sentences: Array<string>;
 }
+
+interface LogMessage {
+    readonly level: string;
+    readonly type: string;
+    readonly message: string;
+}
