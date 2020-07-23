@@ -69,7 +69,7 @@ export default {
             this.text = "";
         },
         submitText() {
-            const txt = {// Text type
+            const txt = {
                 title: this.textTitle,
                 text: this.text
             };
