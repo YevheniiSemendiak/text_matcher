@@ -49,7 +49,8 @@ def send_text():
         routing_key="front_to_back_text",
         body=json.dumps({"text": tts, "title": f"{tts[:10]}..."}),
         properties=pika.BasicProperties(
-            content_type="application/json"
+            content_type="application/json",
+            reply_to=temp_queue_name
         )
     )
     logging.info(f"Text '{tts[:10]} ... {tts[-10:]}' sent!")

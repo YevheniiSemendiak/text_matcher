@@ -1,4 +1,4 @@
-import uuid
+import secrets
 import pickle
 import logging
 from typing import List, Mapping
@@ -30,14 +30,14 @@ class TextMatcher:
         else:
             self.state = BUSY
         sentences = nltk.sent_tokenize(text=request["text"], language="english")
-        sentences_uuids = [uuid.uuid4().hex for _ in range(len(sentences))]
-        text_uuid = uuid.uuid4().hex
-        self.logger.info(f"Processing text {request['text'][:10]}... ({len(sentences_uuids)} sentences) ID: {text_uuid}")
+        sentences_ids = [secrets.token_hex(12) for _ in range(len(sentences))]
+        text_id = secrets.token_hex(12)
+        self.logger.info(f"Processing text {request['text'][:10]}... ({len(sentences_ids)} sentences) ID: {text_id}")
         self.dbdao.write_one_record(
             collection_name="Text",
             record={
-                "_id": text_uuid,
-                "sentencesUUID": sentences_uuids,
+                "_id": text_id,
+                "sentencesUUID": sentences_ids,
                 "text": request["text"],
                 "title": request.get("title")
                 }
@@ -46,18 +46,18 @@ class TextMatcher:
         embeddings = self.model.get_embeddings(sentences)
 
         sentence_records = []
-        for sentence, s_uuid, embedding in zip(sentences, sentences_uuids, embeddings):
+        for sentence, s_uuid, embedding in zip(sentences, sentences_ids, embeddings):
             sentence_records.append({
                 "sentence": sentence,
                 "embedding": pickle.dumps(embedding, protocol=pickle.HIGHEST_PROTOCOL),
                 "_id": s_uuid,
-                "textUUID": text_uuid
+                "textUUID": text_id
             })
         
         self.dbdao.write_many_records("Sentence", sentence_records)
-        self.logger.info(f"Text {text_uuid} processed successfully.")
+        self.logger.info(f"Text {text_id} processed successfully.")
         self.state = IDLE
-        return text_uuid
+        return text_id
     
     def get_sorted_distances(self, sentence_uuid: str, ascending: bool = True, metric="cosine") -> List[Mapping]:
 

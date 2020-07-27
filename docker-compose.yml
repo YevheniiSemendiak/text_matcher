@@ -42,15 +42,15 @@ services:
       - TEXT_MATCHER_RMQ_AMQP_PORT=49153
     restart: on-failure
 
-  front_end:
-    build: ./front/
-    container_name: front_end
-    tty: true
-    networks:
-      - text_matcher
-    ports:
-      - '8080:8080'
-    restart: on-failure
+#  front_end:
+#    build: ./front/
+#    container_name: front_end
+#    tty: true
+#    networks:
+#      - text_matcher
+#    ports:
+#      - '8080:8080'
+#    restart: on-failure
 
 networks:
   text_matcher:
