@@ -47,7 +47,7 @@ let client;
 async function getMongoClient() {
     if (!client) {
         client = await mongoDB.MongoClient.connect(
-            "mongodb://admin:securePasswd!@mongo_db_server/?retryWrites=true&w=majority", {
+            "mongodb://admin:securePasswd!@tm_mongo_db_server/?retryWrites=true&w=majority", {
                 useUnifiedTopology: true
             }
         );

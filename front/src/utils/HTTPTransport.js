@@ -1,17 +1,11 @@
 import axios from "axios";
-import store from "@/store/index";
 
-const apiURL = "http://localhost:49156/api/";
+const tmApiPort = process.env.TM_API_PORT || 49156;
+const apiURL = `http://tm_api:${tmApiPort}/api/`;
 
 const handleError = fn => (...params) =>
     fn(...params).catch(error => {
         console.log(error);
-        const lgmsg = {
-            level: "error",
-            type: "error",
-            message: `Error while communicating with API: ${error.statusText}`
-        };
-        store.commit("pushLogMessage", lgmsg);
     });
 
 export const api = {

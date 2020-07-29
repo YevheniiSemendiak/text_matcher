@@ -4,7 +4,7 @@ services:
     build: ./rabbit/
     stdin_open: true
     tty: true
-    container_name: rabbit_mq_server
+    container_name: tm_rabbit_mq_server
     networks:
       - text_matcher
     ports:
@@ -24,12 +24,12 @@ services:
       - '27017:27017'
     networks:
       - text_matcher
-    container_name: mongo_db_server
+    container_name: tm_mongo_db_server
     restart: on-failure
   
   back_end:
     build: ./back/
-    container_name: back_end
+    container_name: tm_back_end
     networks:
       - text_matcher
     environment:
@@ -42,15 +42,29 @@ services:
       - TEXT_MATCHER_RMQ_AMQP_PORT=49153
     restart: on-failure
 
-#  front_end:
-#    build: ./front/
-#    container_name: front_end
-#    tty: true
-#    networks:
-#      - text_matcher
-#    ports:
-#      - '8080:8080'
-#    restart: on-failure
+  front_end:
+    build: ./front/
+    container_name: tm_front_end
+    tty: true
+    environment:
+      - TM_API_PORT=49156
+    networks:
+      - text_matcher
+    ports:
+      - '8080:8080'
+    restart: on-failure
+
+  api:
+    build: ./api/
+    container_name: tm_api
+    tty: true
+    environment:
+      - TM_API_PORT=49156
+    networks:
+      - text_matcher
+    ports:
+      - '49156:49156'
+    restart: on-failure
 
 networks:
   text_matcher:
