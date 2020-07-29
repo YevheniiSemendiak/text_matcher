@@ -1,6 +1,7 @@
 import secrets
 import pickle
 import logging
+import datetime
 from typing import List, Mapping
 
 import scipy
@@ -39,7 +40,8 @@ class TextMatcher:
                 "_id": text_id,
                 "sentencesUUID": sentences_ids,
                 "text": request["text"],
-                "title": request.get("title")
+                "title": request.get("title"),
+                "dateAdded": datetime.datetime.now().isoformat()
                 }
             )
 
@@ -81,6 +83,8 @@ class TextMatcher:
             distances.append({
                 "distance": dists[sort_idx],
                 "metric": metric,
-                "_id": t_sentences[sort_idx]["_id"]
+                "_id": t_sentences[sort_idx]["_id"],
+                "textUUID": t_sentences[sort_idx]["textUUID"],
+                "sentence": t_sentences[sort_idx]["sentence"]
             })
         return distances

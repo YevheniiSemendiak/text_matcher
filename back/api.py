@@ -8,7 +8,6 @@ import pika
 import text_matcher as tm
 from utils import MongoDBDAO
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)-5s - %(name)s:%(lineno)d |> %(message)s",
@@ -33,7 +32,7 @@ class API:
         )
         self.text_matcher = tm.TextMatcher(self.db_dao)
         self.logger = logging.getLogger(__name__)
-    
+
     # --------------
     # API messages handlers
     # -------------->
@@ -79,7 +78,7 @@ class API:
                     "level": "info",
                     "type": "success",
                     "message": f"Successfully processed text (ID: {response['textUUID']})."
-                 }
+                }
             ),
             properties=pika.BasicProperties(
                 content_type="application/json"
@@ -91,28 +90,25 @@ class API:
                                method: pika.spec.Basic.Deliver,
                                properties: pika.spec.BasicProperties,
                                body: bytes):
-        request = json.loads(body)
-
         response = {
             "success": False,
             "error": "",
             "type": "SentenceDistances",
-            "distances": [{}]
+            "distances": []  # key-values: { "distance": np.float "metric": str "_id": str }
         }
+        request = json.loads(body)
 
-        if self.wait_matcher_is_ready(5):
-            try:
+        try:
+            if self.wait_matcher_is_ready(5):
                 response["distances"] = self.text_matcher.get_sorted_distances(request["sentenceUUID"])
                 response["success"] = True
-            except Exception as err:
-                self.logger.error(err, exc_info=err)
-                response["error"] = str(err)
-        else:
-            response["error"] = f"TextMatcher is not IDLE: {self.text_matcher.state}"
+        except Exception as err:
+            self.logger.error(err, exc_info=err)
+            response["error"] = str(err)
 
         channel.basic_publish(
-            exchange='',
-            routing_key=properties.reply_to,
+            exchange='' if properties.reply_to else "logs",
+            routing_key=properties.reply_to or "",
             body=json.dumps(response),
             properties=pika.BasicProperties(
                 correlation_id=properties.correlation_id,
@@ -121,41 +117,6 @@ class API:
         )
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def query_db(self,
-                 channel: pika.channel.Channel,
-                 method: pika.spec.Basic.Deliver,
-                 properties: pika.spec.BasicProperties,
-                 body: bytes):
-        request = json.loads(body)
-        # body must include "collectionName" (str) and "filter" (dict) and "projection" (dict)
-        response = {
-            "success": False,
-            "error": "",
-            "type": "QueryDB",
-            "data": None
-        }
-        try:
-            response["data"] = self.db_dao.get_records(
-                request.pop("collectionName"), request.pop("filter"), request.pop("projection")
-            )
-            response["success"] = True
-            if type(properties.reply_to) != str:
-                raise TypeError("reply_to pro")
-        except Exception as e:
-            response["success"] = False
-            response["error"] = str(e)
-
-        channel.basic_publish(
-            exchange='',
-            routing_key=properties.reply_to,
-            body=json.dumps(response),
-            properties=pika.BasicProperties(
-                correlation_id=properties.correlation_id,
-                content_type="application/json"
-            )
-        )
-        channel.basic_ack(delivery_tag=method.delivery_tag)
-    
     # --------------
     #  Helper methods
     # -------------->
@@ -163,7 +124,8 @@ class API:
         started = time.time()
         while self.text_matcher.state != tm.IDLE and time.time() - started < timeout:
             time.sleep(0.1)
-        return self.text_matcher.state == tm.IDLE
+        assert self.text_matcher.state == tm.IDLE, "Text matcher is not ready."
+        return True
 
     def run(self):
         """
@@ -175,7 +137,8 @@ class API:
 
         rmq_channel.basic_consume(queue='front_to_back_text', on_message_callback=self.new_text)
         rmq_channel.basic_consume(queue='front_to_back_sentences', on_message_callback=self.get_sentence_distances)
-        rmq_channel.basic_consume(queue='front_to_back_query_db', on_message_callback=self.query_db)
+
+        self.logger.info("Back-end is ready.")
 
         try:
             rmq_channel.start_consuming()
