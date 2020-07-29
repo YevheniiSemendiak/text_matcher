@@ -1,37 +1,60 @@
 <template>
-    <v-alert
-        :type="alertType"
+    <v-snackbar
+        app
+        :color="alertType"
         :value="showAlert"
-        dismissible
-        class="mx-auto"
-        transition="slide-y-transition"
+        transition="slide-y-reverse-transition"
+        bottom
     >
         {{ alertText }}
-    </v-alert>
+        <template v-slot:action="{ attrs }">
+            <v-btn dark text v-bind="attrs" @click="showAlert = false">
+                Close
+            </v-btn>
+        </template>
+    </v-snackbar>
 </template>
 
 <script>
+import { processLogEvent } from "@/utils/EventHandlers";
+
 export default {
     name: "AlertNotifier",
-    props: {
-        alertType: {
-            required: true,
-            type: String
-        },
-        alertText: {
-            required: true,
-            type: String
-        }
-    },
     data() {
         return {
-            showAlert: true
+            showAlert: false,
+            alertType: "info",
+            alertText: "",
+            logMessages: []
         };
     },
-    created() {
-        setTimeout(() => {
-            this.showAlert = false;
-        }, 5000);
+    watch: {
+        logMessages: function() {
+            if (this.logMessages.length > 0) {
+                const logMsg = this.logMessages.shift();
+                this.alertType = logMsg.type;
+                this.alertText = logMsg.message;
+                this.showAlert = true;
+            }
+        },
+        "$store.getters.wStompConnected": function() {
+            if (this.$store.getters.wStompConnected) {
+                this.$store.getters.wStomp.subscribe("front_logs", event => {
+                    this.pushLogMessage(event);
+                });
+            } else {
+                this.logMessages.push({
+                    type: "warning",
+                    level: "warning",
+                    message: "Web STOMP transport was disconnected."
+                });
+            }
+        }
+    },
+    methods: {
+        pushLogMessage(event) {
+            this.logMessages.push(processLogEvent(event));
+        }
     }
 };
 </script>

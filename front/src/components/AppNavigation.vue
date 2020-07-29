@@ -1,49 +1,37 @@
 <template>
-    <div>
+    <div id="nav">
         <v-navigation-drawer
             app
             v-model="drawer"
-            class="teal darken-1"
+            color="#414A4F"
             dark
             disable-resize-watcher
         >
-            <v-list rounded>
-                <template v-for="(item, index) in items">
-                    <v-list-item-title :key="index">
-                        <v-list-item-content
-                            @click="item.action"
-                            class="d-flex justify-center"
-                        >
+            <v-list nav>
+                <template v-for="(item, index) in NavButtons">
+                    <v-list-item
+                        :key="`nav-draw-item-${index}`"
+                        link
+                        :to="item.route"
+                        @click="item.action"
+                    >
+                        <v-list-item-icon>
+                            <v-icon> {{ item.icon }} </v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
                             {{ item.title }}
                         </v-list-item-content>
-                    </v-list-item-title>
+                    </v-list-item>
                     <v-divider :key="`divider-${index}`"></v-divider>
                 </template>
             </v-list>
         </v-navigation-drawer>
-        <v-app-bar app color="teal" dark>
-            <v-app-bar-nav-icon
-                class="hidden-md-and-up"
-                @click="drawer = !drawer"
-            >
-            </v-app-bar-nav-icon>
-            <v-spacer class="hidden-md-and-up"></v-spacer>
-            <v-btn
-                color="teal lighten-1"
-                class="hidden-sm-and-down"
-                @click="addNewTextAction"
-            >
-                Add new text</v-btn
-            >
-            <v-spacer class="hidden-sm-and-down"></v-spacer>
+        <v-app-bar app color="#32637A" dark>
+            <v-app-bar-nav-icon @click="drawer = !drawer"> </v-app-bar-nav-icon>
+            <v-spacer></v-spacer>
             <v-toolbar-title>{{ appTitle }}</v-toolbar-title>
-            <v-spacer class="hidden-sm-and-down"></v-spacer>
-            <v-btn
-                color="teal lighten-1"
-                class="hidden-sm-and-down"
-                @click="aboutAction"
-                >About</v-btn
-            >
+            <v-spacer></v-spacer>
+            <connection-indicator />
         </v-app-bar>
         <add-text-form></add-text-form>
     </div>
@@ -51,21 +39,40 @@
 
 <script>
 import AddTextForm from "@/components/AddTextForm";
+import ConnectionIndicator from "@/components/ConnectionIndicator";
+
 export default {
     name: "AppNavigation",
     data() {
         return {
             appTitle: "Text Matcher",
             drawer: false,
-            items: [
-                { title: "Add new text", action: this.addNewTextAction },
-                { title: "About", action: this.aboutAction }
-            ],
-            showAddTextForm: false
+            logs: [],
+            NavButtons: [
+                {
+                    title: "Home",
+                    action: () => void 0,
+                    route: { name: "Home" },
+                    icon: "mdi-view-dashboard"
+                },
+                {
+                    title: "Add new text",
+                    action: this.addNewTextAction,
+                    route: "",
+                    icon: "mdi-plus"
+                },
+                {
+                    title: "About",
+                    action: this.aboutAction,
+                    route: "",
+                    icon: "mdi-information"
+                }
+            ]
         };
     },
     components: {
-        AddTextForm
+        AddTextForm,
+        ConnectionIndicator
     },
     methods: {
         addNewTextAction() {
@@ -79,4 +86,16 @@ export default {
     }
 };
 </script>
-<style scoped></style>
+<style scoped>
+#nav .v-list-item--link {
+    font-weight: bold;
+    color: #fba85c;
+    padding: 0 10px;
+    text-decoration: none;
+}
+#nav .v-list-item--active {
+    font-weight: bold;
+    color: #fe6625;
+    padding: 0 10px;
+}
+</style>

@@ -11,7 +11,9 @@
     - Being in *text_matcher/back* folder hit `python3 simple_cli.py`.
     - Requires `pika` and `pymongo` Python3 modules installed.
 
-2. Web GUI: coming soon...
+2. Web GUI:
+    - Build using Vue.js & Vuetify.js frameworks.
+    - Add, read texts and compare sentences.
 
 ### Questions or Suggestions?
 Contact me at [TG](https://t.me/semendiak) or [:email:](mailto:semendyak@mail.com).
