@@ -16,23 +16,44 @@
 </template>
 
 <script>
+import { processLogEvent } from "@/utils/EventHandlers";
+
 export default {
     name: "AlertNotifier",
     data() {
         return {
             showAlert: false,
             alertType: "info",
-            alertText: ""
+            alertText: "",
+            logMessages: []
         };
     },
     watch: {
-        "$store.getters.lastLogMessage": function() {
-            if (this.$store.getters.lastLogMessage) {
-                this.alertType = this.$store.getters.lastLogMessage.type;
-                this.alertText = this.$store.getters.lastLogMessage.message;
+        logMessages: function() {
+            if (this.logMessages.length > 0) {
+                const logMsg = this.logMessages.shift();
+                this.alertType = logMsg.type;
+                this.alertText = logMsg.message;
                 this.showAlert = true;
-                this.$store.commit("popLogMessage");
             }
+        },
+        "$store.getters.wStompConnected": function() {
+            if (this.$store.getters.wStompConnected) {
+                this.$store.getters.wStomp.subscribe("front_logs", event => {
+                    this.pushLogMessage(event);
+                });
+            } else {
+                this.logMessages.push({
+                    type: "warning",
+                    level: "warning",
+                    message: "Web STOMP transport was disconnected."
+                });
+            }
+        }
+    },
+    methods: {
+        pushLogMessage(event) {
+            this.logMessages.push(processLogEvent(event));
         }
     }
 };

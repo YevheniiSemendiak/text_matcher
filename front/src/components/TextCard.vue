@@ -4,14 +4,20 @@
             style="text-decoration: none; color: inherit;"
             :to="{
                 name: 'TextView',
-                params: { id: id, title: title, text: text }
+                params: { text: text }
             }"
         >
             <v-card :elevation="hover ? 12 : 2">
-                <v-card-title> {{ title }} </v-card-title>
-                <v-card-subtitle> {{ id }} </v-card-subtitle>
+                <v-card-title> {{ text.title }} </v-card-title>
+                <v-card-subtitle>
+                    {{
+                        new Date(text.dateAdded).toISOString().substring(0, 10)
+                    }}
+                </v-card-subtitle>
                 <v-card-text>
-                    <div class="textOverflowing">{{ text }}</div></v-card-text
+                    <div class="textOverflowing">
+                        {{ text.text }}
+                    </div></v-card-text
                 >
             </v-card>
         </router-link>
@@ -23,17 +29,8 @@ import router from "../router";
 export default {
     name: "TextCard",
     props: {
-        title: {
-            default: "Undefined",
-            type: String
-        },
         text: {
-            default: "Undefined",
-            type: String
-        },
-        id: {
-            required: true,
-            type: String
+            default: "Undefined"
         }
     },
     data() {

@@ -1,8 +1,8 @@
 interface Text {
-    readonly id: string;
+    readonly _id: string;
     readonly title: string;
     readonly text: string;
-    readonly sentences: Array<string>;
+    readonly sentencesUUID: Array<string>;
 }
 
 interface LogMessage {

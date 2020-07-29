@@ -21,6 +21,17 @@ const routes: Array<RouteConfig> = [
         meta: {
             title: "Text View"
         }
+    },
+    {
+        path: "/sentence-comparison",
+        name: "SentenceComparison",
+        component: () =>
+            import(
+                /* webpackChunkName: "SentenceComparison" */ "@/views/SentenceComparison.vue"
+            ),
+        meta: {
+            title: "Sentence Comparison"
+        }
     }
 ];
 

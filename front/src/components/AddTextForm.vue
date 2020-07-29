@@ -53,6 +53,9 @@
 </template>
 
 <script>
+import ID from "@/utils/ID";
+import { api } from "@/utils/HTTPTransport";
+
 export default {
     name: "AddTextForm",
     data() {
@@ -63,19 +66,46 @@ export default {
             textValidationRules: [value => !!value]
         };
     },
+    created() {
+        this.replyQueueName = "front-addTextForm-" + ID();
+    },
     methods: {
         clearForm() {
             this.textTitle = "";
             this.text = "";
         },
         submitText() {
-            const txt = {
-                title: this.textTitle,
-                text: this.text
-            };
+            this.$store.getters.wStomp.send(
+                "front_to_back_text",
+                JSON.stringify({
+                    title: this.textTitle,
+                    text: this.text
+                }),
+                { "reply-to": this.replyQueueName }
+            );
             this.$store.commit("flipAddTextFormShown");
-            this.$store.commit("pushTextToSend", txt);
             this.clearForm();
+        },
+        async textSubmittedCallback(event) {
+            if (event.body) {
+                const body = JSON.parse(event.body);
+                const text = await api.getText(body.textUUID);
+                this.$store.commit("pushText", text);
+            }
+        }
+    },
+    watch: {
+        "$store.getters.wStompConnected": function() {
+            if (this.$store.getters.wStompConnected) {
+                this.$store.getters.wStomp.subscribe(
+                    this.replyQueueName,
+                    event => {
+                        this.textSubmittedCallback(event);
+                    }
+                );
+            } else {
+                this.$store.getters.wStomp.unsubscribe(this.replyQueueName);
+            }
         }
     }
 };
