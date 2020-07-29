@@ -20,9 +20,22 @@ export default {
         AlertNotifier
     },
     watch: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         $route(to, from) {
             document.title = "TextMacher | " + to.meta.title;
         }
+    },
+    created() {
+        this.$store.getters.wStomp.connect(
+            "guest", // user
+            "guest", // pass
+            () => void 0,
+            frame => void 0,
+            "/"
+        );
+    },
+    destroyed() {
+        this.$store.getters.wStomp.disconnect(this.logEvent);
     }
 };
 </script>

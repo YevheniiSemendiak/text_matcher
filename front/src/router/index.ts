@@ -17,11 +17,20 @@ const routes: Array<RouteConfig> = [
         path: "/text-view",
         name: "TextView",
         component: () =>
-            import(
-                /* webpackChunkName: "Text-Detailed" */ "@/views/TextDetailed.vue"
-            ),
+            import(/* webpackChunkName: "TextView" */ "@/views/TextView.vue"),
         meta: {
             title: "Text View"
+        }
+    },
+    {
+        path: "/sentence-comparison",
+        name: "SentenceComparison",
+        component: () =>
+            import(
+                /* webpackChunkName: "SentenceComparison" */ "@/views/SentenceComparison.vue"
+            ),
+        meta: {
+            title: "Sentence Comparison"
         }
     }
 ];
