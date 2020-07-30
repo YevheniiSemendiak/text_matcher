@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const tmApiPort = process.env.TM_API_PORT || 49156;
-const apiURL = `http://tm_api:${tmApiPort}/api/`;
+const apiURL = `http://localhost:${tmApiPort}/api/`;
 
 const handleError = fn => (...params) =>
     fn(...params).catch(error => {

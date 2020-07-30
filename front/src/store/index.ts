@@ -11,7 +11,7 @@ export default new Vuex.Store({
         texts: Array<Text>(),
         textsIDs: new Set<string>(),
         wStomp: over(
-            new WebSocket("ws://" + "rabbit_mq_server" + ":" + 49155 + "/ws"),
+            new WebSocket("ws://" + "localhost" + ":" + 49155 + "/ws"),
             {
                 debug: false
             }
