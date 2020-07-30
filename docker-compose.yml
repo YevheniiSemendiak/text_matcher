@@ -53,8 +53,11 @@ services:
     ports:
       - '8080:8080'
     restart: on-failure
+    depends_on:
+      - tm_api
+      - rabbit_mq_server
 
-  api:
+  tm_api:
     build: ./api/
     container_name: tm_api
     tty: true
